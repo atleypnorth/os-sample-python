@@ -1,10 +1,8 @@
 import os
 
 SECRET_KEY = 'top-secret'
-if os.environ.get('APP_CONFIG') is not None:
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:////data/db.sqlite')
-else:
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite')
+db_path = os.environ.get('DB_PATH','db.sqlite')
+SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///%s' % db_path)
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 workers = int(os.environ.get('GUNICORN_PROCESSES', '3'))
