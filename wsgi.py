@@ -17,6 +17,7 @@ from flask.json import jsonify
 _logger = logging.getLogger(__name__)
 # create application instance
 app = Flask(__name__)
+application = app
 
 # initialize extensions
 bootstrap = Bootstrap(app)
