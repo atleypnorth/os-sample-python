@@ -282,15 +282,3 @@ def phone_post():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
-
-
-def init_db():
-    # create database tables if they don't exist yet
-    db.create_all()
-
-
-if __name__ == '__main__':
-    app.config.from_object('config')
-    init_db()
-    app.run()
-

@@ -1,9 +1,9 @@
 import logging
-from authapp import app as application, init_db
+from authapp import app as application, db
 
 logging.basicConfig(level=logging.INFO)
-
-init_db()
+application.config.from_object('config')
+db.create_all()
 
 if __name__ == '__main__':
     application.run()
