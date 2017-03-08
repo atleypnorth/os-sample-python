@@ -4,7 +4,7 @@ from flask import Flask, render_template, session, \
     abort, request
 
 from flask_sqlalchemy import SQLAlchemy, orm
-from flask_login import LoginManager, UserMixin
+from flask_login import UserMixin
 from flask_bootstrap import Bootstrap
 import string
 import random
@@ -28,7 +28,6 @@ application = app
 # initialize extensions
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
-lm = LoginManager(app)
 
 
 class User(UserMixin, db.Model):
@@ -38,6 +37,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True)
     otp_secret = db.Column(db.String(16, convert_unicode=False))
     phone_imei = db.Column(db.String(60))
+    logged_in = db.Column(db.Boolean())
     fer = None
 
     def __init__(self, **kwargs):
@@ -48,6 +48,7 @@ class User(UserMixin, db.Model):
         # self.fer = Fernet(self.otp_secret)
         self.phone_imei = kwargs.get('phone_imei')
         self.backend = default_backend()
+        self.logged_in = False
 
     @orm.reconstructor
     def init_on_load(self):
@@ -58,7 +59,7 @@ class User(UserMixin, db.Model):
         return data
 
     def no_decrypt_bytes(self, data, iv=None):
-        return data.decode() 
+        return data.decode()
 
     def aes_encrypt(self, data):
         iv = os.urandom(16)
@@ -158,6 +159,9 @@ def phone_login():
     if payload['phoneId'] != user.phone_imei:
         _logger.error('%s != %s', payload['phoneId'], user.phone_imei)
         abort(500)
+    user.logged_in = True
+    db.session.add(user)
+    db.session.commit()
     text = jsonify(username=user.encrypt(user.username))
     return text
 
@@ -225,6 +229,29 @@ def user_active():
         if user:
             is_active = user.phone_imei is not None
     text = jsonify(status=is_active)
+    return text
+
+
+@app.route('/user-logged-in', methods=['GET'])
+def user_logged_in():
+    is_logged_in = False
+    if 'username' in request.form:
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user:
+            is_logged_in = user.logged_in
+    text = jsonify(status=is_logged_in)
+    return text
+
+
+@app.route('/user-logout', methods=['POST'])
+def user_logout():
+    if 'username' in request.form:
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user:
+            user.logged_in = False
+            db.session.add(user)
+            db.session.commit()
+    text = jsonify(status=True)
     return text
 
 
