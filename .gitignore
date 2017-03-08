@@ -3,3 +3,4 @@ get_pip.py
 venv
 db.sqlite
 __pycache__
+remote_test.py
