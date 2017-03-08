@@ -85,8 +85,9 @@ def register_app():
         'Expires': '0'}
 
 
-@app.route('/activate_app', methods=['POST'])
+@app.route('/activate-app', methods=['POST'])
 def activate_app():
+    print(request.form)
     if 'username' not in request.form:
         abort(404)
     user = User.query.filter_by(username=request.form['username']).first_or_404()
