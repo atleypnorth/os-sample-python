@@ -1,2 +1,5 @@
-#ignoring venv
-venv/
+virtenv
+get_pip.py
+venv
+db.sqlite
+__pycache__
