@@ -47,17 +47,16 @@ class User(UserMixin, db.Model):
         self.fer = Fernet(self.otp_secret)
 
     def encrypt(self, data):
-        return self.fer.encrypt(data.encode()).decode()
+        return data
+        #return self.fer.encrypt(data.encode()).decode()
 
     def decrypt(self, data):
-        return self.decrypt_bytes(data.encode())
+        return data
+        #return self.decrypt_bytes(data.encode())
 
     def decrypt_bytes(self, data):
-        return self.fer.decrypt(data).decode()
-
-    def get_totp_uri(self):
-        return 'otpauth://totp/2FA-Demo:{0}?secret={1}&issuer=2FA-Demo' \
-            .format(self.username, self.otp_secret)
+        return data
+        #return self.fer.decrypt(data).decode()
 
 
 @app.route('/register', methods=['POST'])
@@ -99,6 +98,23 @@ def activate_app():
     user.phone_imei = payload['phoneId']
     db.session.add(user)
     db.session.commit()
+    text = jsonify(username=user.encrypt(user.username))
+    return text
+
+
+@app.route('/login', methods=['POST'])
+def phone_login():
+    if 'username' not in request.form:
+        _logger.error('No username in login request')
+        abort(404)
+    user = User.query.filter_by(username=request.form['username']).first_or_404()
+    payload = json.loads(user.decrypt(request.form['args']))
+    if 'phoneId' not in payload:
+        _logger.error('phoneId not present')
+        abort(404)
+    if payload['phoneId'] != user.phone_imei:
+        _logger.error('%s != %s', payload['phoneId'], user.phone_imei)
+        abort(500)
     text = jsonify(username=user.encrypt(user.username))
     return text
 
