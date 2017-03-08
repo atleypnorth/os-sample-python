@@ -1,4 +1,5 @@
 from io import StringIO, BytesIO
+import os
 from flask import Flask, render_template, session, \
     abort, request
 
@@ -12,6 +13,10 @@ from cryptography.fernet import Fernet
 import logging
 import json
 from flask.json import jsonify
+
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import padding
+from cryptography.hazmat.backends import default_backend
 
 
 _logger = logging.getLogger(__name__)
@@ -38,25 +43,39 @@ class User(UserMixin, db.Model):
         super(User, self).__init__(**kwargs)
         if self.otp_secret is None:
             # generate a random secret
-            self.otp_secret = Fernet.generate_key()
-        self.fer = Fernet(self.otp_secret)
+            self.otp_secret = os.urandom(32)  # Fernet.generate_key()
+        # self.fer = Fernet(self.otp_secret)
         self.phone_imei = kwargs.get('phone_imei')
+        self.backend = default_backend()
 
     @orm.reconstructor
     def init_on_load(self):
-        self.fer = Fernet(self.otp_secret)
+        # self.fer = Fernet(self.otp_secret)
+        self.backend = default_backend()
 
     def encrypt(self, data):
-        return data
-        #return self.fer.encrypt(data.encode()).decode()
+        iv = os.urandom(16)
+        padder = padding.PKCS7(128).padder()
+        padded_data = padder.update(data.encode())
+        padded_data += padder.finalize()
+        cipher = Cipher(algorithms.AES(self.otp_secret), modes.CBC(iv), backend=self.backend)
+        encryptor = cipher.encryptor()
+        ct = encryptor.update(padded_data) + encryptor.finalize()
+        return (ct.decode(), iv)
+        # return self.fer.encrypt(data.encode()).decode()
 
-    def decrypt(self, data):
-        return data
-        #return self.decrypt_bytes(data.encode())
+    def decrypt(self, data, iv):
+        return self.decrypt_bytes(data.encode())
 
-    def decrypt_bytes(self, data):
-        return data
-        #return self.fer.decrypt(data).decode()
+    def decrypt_bytes(self, data, iv):
+        unpadder = padding.PKCS7(128).unpadder()
+        unpadded = unpadder.update(data)
+        unpadded += unpadder.finalize()
+        cipher = Cipher(algorithms.AES(self.otp_secret), modes.CBC(iv), backend=self.backend)
+        decryptor = cipher.decryptor()
+        ct = decryptor.update(unpadded) + decryptor.finalize()
+        return ct.decode()
+        # return self.fer.decrypt(data).decode()
 
 
 @app.route('/register', methods=['POST'])
