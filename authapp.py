@@ -13,9 +13,10 @@ from cryptography.fernet import Fernet
 import logging
 import json
 from flask.json import jsonify
+import base64
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.ciphers import padding
+from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 
 
@@ -43,7 +44,7 @@ class User(UserMixin, db.Model):
         super(User, self).__init__(**kwargs)
         if self.otp_secret is None:
             # generate a random secret
-            self.otp_secret = os.urandom(32)  # Fernet.generate_key()
+            self.otp_secret = Fernet.generate_key()[:16]
         # self.fer = Fernet(self.otp_secret)
         self.phone_imei = kwargs.get('phone_imei')
         self.backend = default_backend()
@@ -53,29 +54,43 @@ class User(UserMixin, db.Model):
         # self.fer = Fernet(self.otp_secret)
         self.backend = default_backend()
 
-    def encrypt(self, data):
+    def no_encrypt(self, data):
+        return data
+
+    def no_decrypt_bytes(self, data, iv=None):
+        return data.decode() 
+
+    def aes_encrypt(self, data):
         iv = os.urandom(16)
-        padder = padding.PKCS7(128).padder()
-        padded_data = padder.update(data.encode())
-        padded_data += padder.finalize()
+        padder = padding.PKCS7(algorithms.AES.block_size).padder()
+        padded_data = padder.update(data.encode()) + padder.finalize()
         cipher = Cipher(algorithms.AES(self.otp_secret), modes.CBC(iv), backend=self.backend)
         encryptor = cipher.encryptor()
         ct = encryptor.update(padded_data) + encryptor.finalize()
-        return (ct.decode(), iv)
+        print(ct)
+        token = base64.urlsafe_b64encode(ct)
+        print(token)
+        return (token.decode(), iv)
         # return self.fer.encrypt(data.encode()).decode()
 
-    def decrypt(self, data, iv):
-        return self.decrypt_bytes(data.encode())
+    def decrypt(self, data, iv=None):
+        return self.decrypt_bytes(data.encode(), iv)
 
-    def decrypt_bytes(self, data, iv):
-        unpadder = padding.PKCS7(128).unpadder()
-        unpadded = unpadder.update(data)
-        unpadded += unpadder.finalize()
+    encrypt = no_encrypt
+
+    def aes_decrypt_bytes(self, token, iv):
+        print(token)
+        data = base64.urlsafe_b64decode(token)
+        print(data)
+        unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+        unpadded = unpadder.update(data) + unpadder.finalize()
         cipher = Cipher(algorithms.AES(self.otp_secret), modes.CBC(iv), backend=self.backend)
         decryptor = cipher.decryptor()
         ct = decryptor.update(unpadded) + decryptor.finalize()
         return ct.decode()
         # return self.fer.decrypt(data).decode()
+
+    decrypt_bytes = no_decrypt_bytes
 
 
 @app.route('/register', methods=['POST'])
@@ -83,18 +98,26 @@ def register_app():
     if 'username' not in request.form:
         _logger.error('Username not in request')
         abort(404)
-    user = User.query.filter_by(username=request.form['username']).first()
-    if user is not None:
-        _logger.error('Username already registered.')
-        abort(404)
+    command = request.form.get('command', 'REGISTER')
+    if command == 'REGISTER':
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user is not None:
+            _logger.error('Username already registered.')
+            abort(404)
 
-    # check auth at this point ...
-    # add new user to the database
-    user = User(username=request.form['username'])
-    db.session.add(user)
-    db.session.commit()
-    data = {'username': user.username, 'secret': user.otp_secret.decode()}
-    url = pyqrcode.create(json.dumps(data))
+        # check auth at this point ...
+        # add new user to the database
+        user = User(username=request.form['username'])
+        db.session.add(user)
+        db.session.commit()
+        data = {'username': user.username, 'secret': user.otp_secret.decode()}
+        url = pyqrcode.create(json.dumps(data))
+
+    if command == 'LOGIN':
+        user = User.query.filter_by(username=request.form['username']).first_or_404()
+        data = {'username': user.username, 'command': 'login'}
+        url = pyqrcode.create(json.dumps(data))
+
     stream = BytesIO()
     url.svg(stream, scale=3)
     return stream.getvalue(), 200, {
@@ -192,6 +215,17 @@ def qrcode():
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'}
+
+
+@app.route('/user-active', methods=['GET'])
+def user_active():
+    is_active = False
+    if 'username' in request.form:
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user:
+            is_active = user.phone_imei is not None
+    text = jsonify(status=is_active)
+    return text
 
 
 @app.route('/phone_post', methods=['POST'])
