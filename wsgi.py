@@ -1,4 +1,4 @@
-from io import StringIO
+from io import StringIO, BytesIO
 from flask import Flask, render_template, session, \
     abort, request
 
@@ -59,7 +59,7 @@ class User(UserMixin, db.Model):
             .format(self.username, self.otp_secret)
 
 
-@app.route('/register_app', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register_app():
     if 'username' not in request.form:
         _logger.error('Username not in request')
@@ -74,8 +74,17 @@ def register_app():
     user = User(username=request.form['username'])
     db.session.add(user)
     db.session.commit()
-    text = jsonify(username=user.username, secret=user.otp_secret.decode())
-    return text
+    data = {'username': user.username, 'secret': user.otp_secret.decode()}
+    _logger.info(data)
+    url = pyqrcode.create(json.dumps(data))
+    _logger.info(url)
+    stream = BytesIO()
+    url.svg(stream, scale=3)
+    return stream.getvalue(), 200, {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'}
 
 
 @app.route('/activate_app', methods=['POST'])
