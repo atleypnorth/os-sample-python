@@ -75,9 +75,7 @@ def register_app():
     db.session.add(user)
     db.session.commit()
     data = {'username': user.username, 'secret': user.otp_secret.decode()}
-    _logger.info(data)
     url = pyqrcode.create(json.dumps(data))
-    _logger.info(url)
     stream = BytesIO()
     url.svg(stream, scale=3)
     return stream.getvalue(), 200, {
@@ -92,7 +90,7 @@ def activate_app():
     if 'username' not in request.form:
         abort(404)
     user = User.query.filter_by(username=request.form['username']).first_or_404()
-    _logger.info('User %s', user)
+    _logger.debug('User %s', user)
     payload = json.loads(user.decrypt(request.form['args']))
     if 'phoneId' not in payload:
         _logger.error('phoneId not present')
