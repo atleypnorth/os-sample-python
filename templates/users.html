@@ -3,7 +3,11 @@
 {% block page_content %}
 <ul>
 {% for user in users %}
-   <li> {{ user.username }} : {{ user.logged_in }} {{ user.phone_imei }}</li>
+   <li> {{ user.username }} : {{ user.logged_in }} {{ user.phone_imei }} - 
+   <a href="{{ url_for('user_update', username=user.username, what='remove') }}">Delete</a> 
+   <a href="{{ url_for('user_update', username=user.username, what='reset') }}">Reset</a> 
+
+   </li>
 {% endfor %}
 </ul>
 {% endblock %}
