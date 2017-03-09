@@ -130,11 +130,14 @@ var LoginComponent = (function () {
     }
     LoginComponent.prototype.ngOnInit = function () {
         var _this = this;
-        this.communicationService.checkIfUserLoggedIn(localStorage.getItem('currentUser')).subscribe(function (userLoggedIn) {
-            if (userLoggedIn.status) {
-                _this.router.navigate(['/user-logged-in']);
-            }
-        });
+        setInterval(function () {
+            _this.communicationService.checkIfUserLoggedIn(localStorage.getItem('currentUser')).subscribe(function (userLoggedIn) {
+                if (userLoggedIn.status) {
+                    localStorage.setItem('userLoggedIn', "true");
+                    _this.router.navigate(['/user-logged-in']);
+                }
+            });
+        }, 2000);
     };
     LoginComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* Component */])({
@@ -193,18 +196,15 @@ var RegisterAppComponent = (function () {
             _this.userLoggedIn = true;
             _this.userAccountActivatedCheck();
         });
-        //  this.userAccountActivatedCheck();
-        //  setTimeout(() => this.loading = false, 2000);
-        //  setTimeout(() => this.userActivatedAccount = true, 5000);
     };
     RegisterAppComponent.prototype.userAccountActivatedCheck = function () {
         var _this = this;
         setInterval(function () {
             _this.communicationService.checkIfUserActivatedApp(localStorage.getItem('currentUser')).subscribe(function (userAccountActivated) {
-                _this.showAccountActivatedDialog = userAccountActivated.status;
-                _this.router.navigate(['/login']);
+                if (userAccountActivated.status && !localStorage.getItem('userLoggedIn'))
+                    _this.router.navigate(['/login']);
             });
-        }, 5000);
+        }, 2000);
     };
     RegisterAppComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* Component */])({
@@ -633,7 +633,7 @@ exports = module.exports = __webpack_require__(39)();
 
 
 // module
-exports.push([module.i, "#mainContent {\r\n    height: 93vh;\r\n    background-color: #ffffff;\r\n}", ""]);
+exports.push([module.i, "#mainContent {\r\n    height: 93vh;\r\n    background-color: #ffffff;\r\n}\r\n\r\n#mainContent>div {\r\n    margin-top: 2rem;\r\n    text-shadow: 0 0 black;\r\n    text-align: center;\r\n}", ""]);
 
 // exports
 
@@ -651,7 +651,7 @@ exports = module.exports = __webpack_require__(39)();
 
 
 // module
-exports.push([module.i, "img {\r\n    height: 8vh;\r\n}\r\n\r\nnav {\r\n    background-image: url('/static/assets/header_background.png')\r\n}\r\n\r\ndiv {\r\n    height: 8vh;\r\n    margin-top: -0.4rem;\r\n}", ""]);
+exports.push([module.i, "nav {\r\n    background-image: url('/static/assets/header_background.png');\r\n    background-size: 100%;\r\n    margin-top: -0.5rem;\r\n    min-width: 100%;\r\n    height: 8vh;\r\n}\r\n\r\ndiv {\r\n    height: 8vh;\r\n    margin-top: -0.4rem;\r\n}", ""]);
 
 // exports
 
@@ -669,7 +669,7 @@ exports = module.exports = __webpack_require__(39)();
 
 
 // module
-exports.push([module.i, "#indexContainer>div {\r\n    position: absolute;\r\n    top: 40%;\r\n    left: 45%;\r\n}\r\n\r\n#indexContainer>div ul {\r\n    list-style-type: none;\r\n}\r\n\r\n#indexContainer>div ul>li {\r\n    margin-bottom: 3rem;\r\n    text-align: center;\r\n}\r\n\r\n#indexContainer>div a {\r\n    outline: none;\r\n    text-decoration: none;\r\n    color: #005eb8;\r\n    padding: 1em;\r\n    font-size: 1.5rem;\r\n    border: 2px solid #005eb8;\r\n}\r\n\r\n#indexContainer>div a:hover {\r\n    color: #ffffff;\r\n    background-color: #005eb8;\r\n}\r\n\r\n#loginButton {\r\n    padding: 1em 3em !important;\r\n}", ""]);
+exports.push([module.i, "#indexContainer>div {\r\n    position: absolute;\r\n    top: 60%;\r\n    left: 41.5%;\r\n}\r\n\r\n#indexContainer>div ul {\r\n    list-style-type: none;\r\n}\r\n\r\n#indexContainer>div ul>li {\r\n    margin-bottom: 3rem;\r\n    text-align: center;\r\n}\r\n\r\n#indexContainer>div a {\r\n    outline: none;\r\n    text-decoration: none;\r\n    color: #005eb8;\r\n    padding: 1em;\r\n    font-size: 1.5rem;\r\n    border: 2px solid #005eb8;\r\n}\r\n\r\n#indexContainer>div a:hover {\r\n    color: #ffffff;\r\n    background-color: #005eb8;\r\n}\r\n\r\n#loginButton {\r\n    padding: 1em 3em !important;\r\n}", ""]);
 
 // exports
 
@@ -687,7 +687,7 @@ exports = module.exports = __webpack_require__(39)();
 
 
 // module
-exports.push([module.i, "    #accountActivated {\r\n        padding-top: 16%;\r\n    }\r\n    \r\n    #accountActivated>h3 {\r\n        font-size: 2rem;\r\n        color: #1df72d;\r\n        display: inline-block;\r\n        padding: 2rem;\r\n        border: 2px solid #1df72d;\r\n        background-color: #fff;\r\n    }", ""]);
+exports.push([module.i, "    #accountActivated {\r\n        padding-top: 2%;\r\n        text-align: center;\r\n    }\r\n    \r\n    #accountActivated>h3 {\r\n        font-size: 2rem;\r\n        color: #1df72d;\r\n        display: inline-block;\r\n        padding: 2rem;\r\n        border: 2px solid #1df72d;\r\n        background-color: #fff;\r\n    }", ""]);
 
 // exports
 
@@ -723,7 +723,7 @@ exports = module.exports = __webpack_require__(39)();
 
 
 // module
-exports.push([module.i, "    #registerAppContainer {\r\n        text-align: center;\r\n    }\r\n    \r\n    #registerAppContainer a {\r\n        border: 1px solid #005eb8;\r\n        padding: 0.5rem 1rem;\r\n        margin-left: 9%;\r\n        color: #005eb8;\r\n    }\r\n    \r\n    #registerQrCode {\r\n        margin-top: 16%;\r\n    }\r\n    \r\n    #registerAppContainer a:hover {\r\n        cursor: pointer;\r\n        background-color: #005eb8;\r\n        color: #ffffff;\r\n    }\r\n    \r\n    #registerAppContainer form {\r\n        padding-top: 16%;\r\n        font-size: 1.3em;\r\n    }\r\n    \r\n    #registerAppContainer form>div {\r\n        margin-bottom: 1em;\r\n    }\r\n    \r\n    #registerAppContainer img {\r\n        padding-top: 10%;\r\n        width: 25%;\r\n    }\r\n    \r\n    #accountActivated {\r\n        padding-top: 16%;\r\n    }\r\n    \r\n    #accountActivated>h3 {\r\n        font-size: 2rem;\r\n        color: #1df72d;\r\n        display: inline-block;\r\n        padding: 2rem;\r\n        border: 2px solid #1df72d;\r\n        background-color: #fff;\r\n    }\r\n    \r\n    .sk-folding-cube {\r\n        padding-top: 13%;\r\n        padding-left: 20%;\r\n        margin: 20px auto;\r\n        width: 40px;\r\n        height: 40px;\r\n        position: relative;\r\n        -webkit-transform: rotateZ(45deg);\r\n        transform: rotateZ(45deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube {\r\n        float: left;\r\n        width: 50%;\r\n        height: 50%;\r\n        position: relative;\r\n        -webkit-transform: scale(1.1);\r\n        transform: scale(1.1);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube:before {\r\n        content: '';\r\n        position: absolute;\r\n        top: 0;\r\n        left: 0;\r\n        width: 100%;\r\n        height: 100%;\r\n        background-color: #333;\r\n        -webkit-animation: sk-foldCubeAngle 2.4s infinite linear both;\r\n        animation: sk-foldCubeAngle 2.4s infinite linear both;\r\n        -webkit-transform-origin: 100% 100%;\r\n        transform-origin: 100% 100%;\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube2 {\r\n        -webkit-transform: scale(1.1) rotateZ(90deg);\r\n        transform: scale(1.1) rotateZ(90deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube3 {\r\n        -webkit-transform: scale(1.1) rotateZ(180deg);\r\n        transform: scale(1.1) rotateZ(180deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube4 {\r\n        -webkit-transform: scale(1.1) rotateZ(270deg);\r\n        transform: scale(1.1) rotateZ(270deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube2:before {\r\n        -webkit-animation-delay: 0.3s;\r\n        animation-delay: 0.3s;\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube3:before {\r\n        -webkit-animation-delay: 0.6s;\r\n        animation-delay: 0.6s;\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube4:before {\r\n        -webkit-animation-delay: 0.9s;\r\n        animation-delay: 0.9s;\r\n    }\r\n    \r\n    @-webkit-keyframes sk-foldCubeAngle {\r\n        0%,\r\n        10% {\r\n            -webkit-transform: perspective(140px) rotateX(-180deg);\r\n            transform: perspective(140px) rotateX(-180deg);\r\n            opacity: 0;\r\n        }\r\n        25%,\r\n        75% {\r\n            -webkit-transform: perspective(140px) rotateX(0deg);\r\n            transform: perspective(140px) rotateX(0deg);\r\n            opacity: 1;\r\n        }\r\n        90%,\r\n        100% {\r\n            -webkit-transform: perspective(140px) rotateY(180deg);\r\n            transform: perspective(140px) rotateY(180deg);\r\n            opacity: 0;\r\n        }\r\n    }\r\n    \r\n    @keyframes sk-foldCubeAngle {\r\n        0%,\r\n        10% {\r\n            -webkit-transform: perspective(140px) rotateX(-180deg);\r\n            transform: perspective(140px) rotateX(-180deg);\r\n            opacity: 0;\r\n        }\r\n        25%,\r\n        75% {\r\n            -webkit-transform: perspective(140px) rotateX(0deg);\r\n            transform: perspective(140px) rotateX(0deg);\r\n            opacity: 1;\r\n        }\r\n        90%,\r\n        100% {\r\n            -webkit-transform: perspective(140px) rotateY(180deg);\r\n            transform: perspective(140px) rotateY(180deg);\r\n            opacity: 0;\r\n        }\r\n    }", ""]);
+exports.push([module.i, "    #registerAppContainer {\r\n        text-align: center;\r\n    }\r\n    \r\n    #registerAppContainer a {\r\n        border: 1px solid #005eb8;\r\n        padding: 0.5rem 1rem;\r\n        margin-left: 9%;\r\n        color: #005eb8;\r\n    }\r\n    \r\n    #registerQrCode {\r\n        margin-top: 2%;\r\n    }\r\n    \r\n    #registerAppContainer a:hover {\r\n        cursor: pointer;\r\n        background-color: #005eb8;\r\n        color: #ffffff;\r\n    }\r\n    \r\n    #registerAppContainer form {\r\n        padding-top: 2%;\r\n        font-size: 1.3em;\r\n    }\r\n    \r\n    #registerAppContainer form>div {\r\n        margin-bottom: 1em;\r\n    }\r\n    \r\n    #registerAppContainer img {\r\n        padding-top: 10%;\r\n        width: 25%;\r\n    }\r\n    \r\n    #accountActivated {\r\n        padding-top: 2%;\r\n    }\r\n    \r\n    #accountActivated>h3 {\r\n        font-size: 2rem;\r\n        color: #1df72d;\r\n        display: inline-block;\r\n        padding: 2rem;\r\n        border: 2px solid #1df72d;\r\n        background-color: #fff;\r\n    }\r\n    \r\n    .sk-folding-cube {\r\n        padding-top: 13%;\r\n        padding-left: 20%;\r\n        margin: 20px auto;\r\n        width: 40px;\r\n        height: 40px;\r\n        position: relative;\r\n        -webkit-transform: rotateZ(45deg);\r\n        transform: rotateZ(45deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube {\r\n        float: left;\r\n        width: 50%;\r\n        height: 50%;\r\n        position: relative;\r\n        -webkit-transform: scale(1.1);\r\n        transform: scale(1.1);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube:before {\r\n        content: '';\r\n        position: absolute;\r\n        top: 0;\r\n        left: 0;\r\n        width: 100%;\r\n        height: 100%;\r\n        background-color: #333;\r\n        -webkit-animation: sk-foldCubeAngle 2.4s infinite linear both;\r\n        animation: sk-foldCubeAngle 2.4s infinite linear both;\r\n        -webkit-transform-origin: 100% 100%;\r\n        transform-origin: 100% 100%;\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube2 {\r\n        -webkit-transform: scale(1.1) rotateZ(90deg);\r\n        transform: scale(1.1) rotateZ(90deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube3 {\r\n        -webkit-transform: scale(1.1) rotateZ(180deg);\r\n        transform: scale(1.1) rotateZ(180deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube4 {\r\n        -webkit-transform: scale(1.1) rotateZ(270deg);\r\n        transform: scale(1.1) rotateZ(270deg);\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube2:before {\r\n        -webkit-animation-delay: 0.3s;\r\n        animation-delay: 0.3s;\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube3:before {\r\n        -webkit-animation-delay: 0.6s;\r\n        animation-delay: 0.6s;\r\n    }\r\n    \r\n    .sk-folding-cube .sk-cube4:before {\r\n        -webkit-animation-delay: 0.9s;\r\n        animation-delay: 0.9s;\r\n    }\r\n    \r\n    @-webkit-keyframes sk-foldCubeAngle {\r\n        0%,\r\n        10% {\r\n            -webkit-transform: perspective(140px) rotateX(-180deg);\r\n            transform: perspective(140px) rotateX(-180deg);\r\n            opacity: 0;\r\n        }\r\n        25%,\r\n        75% {\r\n            -webkit-transform: perspective(140px) rotateX(0deg);\r\n            transform: perspective(140px) rotateX(0deg);\r\n            opacity: 1;\r\n        }\r\n        90%,\r\n        100% {\r\n            -webkit-transform: perspective(140px) rotateY(180deg);\r\n            transform: perspective(140px) rotateY(180deg);\r\n            opacity: 0;\r\n        }\r\n    }\r\n    \r\n    @keyframes sk-foldCubeAngle {\r\n        0%,\r\n        10% {\r\n            -webkit-transform: perspective(140px) rotateX(-180deg);\r\n            transform: perspective(140px) rotateX(-180deg);\r\n            opacity: 0;\r\n        }\r\n        25%,\r\n        75% {\r\n            -webkit-transform: perspective(140px) rotateX(0deg);\r\n            transform: perspective(140px) rotateX(0deg);\r\n            opacity: 1;\r\n        }\r\n        90%,\r\n        100% {\r\n            -webkit-transform: perspective(140px) rotateY(180deg);\r\n            transform: perspective(140px) rotateY(180deg);\r\n            opacity: 0;\r\n        }\r\n    }", ""]);
 
 // exports
 
@@ -741,7 +741,7 @@ exports = module.exports = __webpack_require__(39)();
 
 
 // module
-exports.push([module.i, "    #userLoggedIn {\r\n        padding-top: 16%;\r\n        text-align: center;\r\n    }\r\n    \r\n    #userLoggedIn>h3 {\r\n        font-size: 2rem;\r\n        color: #1df72d;\r\n        display: inline-block;\r\n        padding: 2rem;\r\n        border: 2px solid #1df72d;\r\n        background-color: #fff;\r\n    }", ""]);
+exports.push([module.i, "    #userLoggedIn {\r\n        padding-top: 2%;\r\n        text-align: center;\r\n    }\r\n    \r\n    #userLoggedIn>h3 {\r\n        font-size: 2rem;\r\n        color: #1df72d;\r\n        display: inline-block;\r\n        padding: 2rem;\r\n        border: 2px solid #1df72d;\r\n        background-color: #fff;\r\n    }", ""]);
 
 // exports
 
@@ -761,14 +761,14 @@ module.exports = "<p>\n  activate-account works!\n</p>\n"
 /***/ 678:
 /***/ (function(module, exports) {
 
-module.exports = "<app-header></app-header>\n<div id=\"mainContent\">\n    <router-outlet></router-outlet>\n</div>"
+module.exports = "<app-header></app-header>\n<div id=\"mainContent\">\n    <div>\n        <img src=\"/static/assets/logo.png\" />\n    </div>\n    <router-outlet></router-outlet>\n</div>"
 
 /***/ }),
 
 /***/ 679:
 /***/ (function(module, exports) {
 
-module.exports = "<nav class=\"navbar\">\n    <div>\n        <img src=\"/static/assets/logo-cropped.png\" />\n    </div>\n</nav>"
+module.exports = "<nav class=\"navbar\">\n</nav>"
 
 /***/ }),
 
