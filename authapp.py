@@ -226,25 +226,26 @@ def qrcode():
 
 @app.route('/user-active', methods=['GET'])
 def user_active():
-    _logger.info(request.args)
+    _logger.info('user_active %s',request.args)
     is_active = False
     if 'username' in request.args:
         user = User.query.filter_by(username=request.args['username']).first()
-        _logger.info(user)
         if user:
+            _logger.info('user %s, imie %s', user.username, user.phone_imei)
             is_active = user.phone_imei is not None
     text = jsonify(status=is_active)
+    _logger.info(text)
     return text
 
 
 @app.route('/user-logged-in', methods=['GET'])
 def user_logged_in():
-    _logger.info(request.args)
+    _logger.info('user_logged-in %s',request.args)
     is_logged_in = False
     if 'username' in request.args:
         user = User.query.filter_by(username=request.args['username']).first()
-        _logger.info(user)
         if user:
+            _logger.info('user %s, logged in %s', user.username, user.logged_in)
             is_logged_in = user.logged_in
     text = jsonify(status=is_logged_in)
     return text
@@ -264,6 +265,18 @@ def user_update():
                 db.session.delete(user)
             db.session.commit()
     return redirect(url_for('list_users'))
+
+
+@app.route('/user-logout', methods=['POST'])
+def user_logout():
+    if 'username' in request.form:
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user:
+                user.logged_in = False
+                db.session.add(user)
+                db.session.commit()
+    text = jsonify(status=True)
+    return text
 
 
 @app.route('/phone_post', methods=['POST'])
