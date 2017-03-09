@@ -226,9 +226,11 @@ def qrcode():
 
 @app.route('/user-active', methods=['GET'])
 def user_active():
+    _logger.info(request.args)
     is_active = False
-    if 'username' in request.form:
-        user = User.query.filter_by(username=request.form['username']).first()
+    if 'username' in request.args:
+        user = User.query.filter_by(username=request.args['username']).first()
+        _logger.info(user)
         if user:
             is_active = user.phone_imei is not None
     text = jsonify(status=is_active)
