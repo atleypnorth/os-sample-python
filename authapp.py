@@ -239,9 +239,11 @@ def user_active():
 
 @app.route('/user-logged-in', methods=['GET'])
 def user_logged_in():
+    _logger.info(request.args)
     is_logged_in = False
-    if 'username' in request.form:
-        user = User.query.filter_by(username=request.form['username']).first()
+    if 'username' in request.args:
+        user = User.query.filter_by(username=request.args['username']).first()
+        _logger.info(user)
         if user:
             is_logged_in = user.logged_in
     text = jsonify(status=is_logged_in)
