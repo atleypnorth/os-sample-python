@@ -1,7 +1,7 @@
 from io import StringIO, BytesIO
 import os
 from flask import Flask, render_template, session, \
-    abort, request
+    abort, request, url_for, redirect
 
 from flask_sqlalchemy import SQLAlchemy, orm
 from flask_login import UserMixin
@@ -250,16 +250,20 @@ def user_logged_in():
     return text
 
 
-@app.route('/user-logout', methods=['POST'])
-def user_logout():
-    if 'username' in request.form:
-        user = User.query.filter_by(username=request.form['username']).first()
+@app.route('/user_update', methods=['GET'])
+def user_update():
+    if 'username' in request.args:
+        user = User.query.filter_by(username=request.args['username']).first()
         if user:
-            user.logged_in = False
-            db.session.add(user)
+            do_what = request.args.get('what')
+            if do_what == 'reset':
+                user.phone_imei = None
+                user.logged_in = False
+                db.session.add(user)
+            elif do_what == 'remove':
+                db.session.delete(user)
             db.session.commit()
-    text = jsonify(status=True)
-    return text
+    return redirect(url_for('list_users'))
 
 
 @app.route('/phone_post', methods=['POST'])
