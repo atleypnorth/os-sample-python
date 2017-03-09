@@ -96,6 +96,7 @@ class User(UserMixin, db.Model):
 
 @app.route('/register', methods=['POST'])
 def register_app():
+    _logger.info('register-app : %s', request.form)
     if 'username' not in request.form:
         _logger.error('Username not in request')
         abort(404)
@@ -130,11 +131,12 @@ def register_app():
 
 @app.route('/activate-app', methods=['POST'])
 def activate_app():
-    print(request.form)
+    _logger.info('activate-app : %s', request.form)
     if 'username' not in request.form:
+        _logger.error('username not present')
         abort(404)
     user = User.query.filter_by(username=request.form['username']).first_or_404()
-    _logger.debug('User %s', user)
+    _logger.info('User %s', user)
     payload = json.loads(user.decrypt(request.form['args']))
     if 'phoneId' not in payload:
         _logger.error('phoneId not present')
@@ -148,6 +150,7 @@ def activate_app():
 
 @app.route('/login', methods=['POST'])
 def phone_login():
+    _logger.info('phone_login : %s', request.form)
     if 'username' not in request.form:
         _logger.error('No username in login request')
         abort(404)
